@@ -1,13 +1,11 @@
 {
   "expo": {
     "name": "Meowtopia",
-    "slug": "Meowtopia",
+    "slug": "meowtopia-mobile-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,12 +14,17 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a815c1ef-8328-454a-909d-e5d4d0bbab32"
+      }
+    },
+    "owner": "adelaice7"
   }
 }
