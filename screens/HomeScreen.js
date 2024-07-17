@@ -25,11 +25,6 @@ const styles = StyleSheet.create({
         height: 300,
         marginBottom: 20,
       },
-  actionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '80%',
-  },
 });
 
 export default HomeScreen;
