@@ -5,8 +5,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faFish, faDroplet, faFaceSmile, faHeart, faBoltLightning } from '@fortawesome/free-solid-svg-icons';
 
-const { width } = Dimensions.get('window');
-
 // Define the gradient colors based on the stat value
 const getGradientColors = (value) => {
   const maxValue = 100;
@@ -36,11 +34,10 @@ const getGradientColors = (value) => {
   }
 };
 
-// Add icons to library
 library.add(faFish, faDroplet, faFaceSmile, faHeart, faBoltLightning);
 
 const StatsCircleComponent = ({ selectedCat }) => {
-  const radius = 30; // Adjust radius as needed
+  const radius = 30;
   const diameter = radius * 2;
 
   const icons = {
@@ -94,14 +91,14 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   circle: {
-    borderRadius: 50, // Circle effect
+    borderRadius: 50,
     overflow: 'hidden',
-    backgroundColor: 'white', // Circle border color
+    backgroundColor: 'black',
     borderWidth: 2,
     borderColor: 'black',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative', // Needed for icon positioning
+    position: 'relative',
   },
   gradient: {
     ...StyleSheet.absoluteFillObject, // Fill the circle
