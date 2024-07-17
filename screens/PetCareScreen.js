@@ -10,18 +10,18 @@ import {
   SafeAreaView,
   Platform,
   StatusBar,
+  Modal,
 } from 'react-native';
-import StatsLinearComponent from '../components/StatsLinearComponent';
+import StatsCircleComponent from '../components/StatsCircleComponent';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faFish, faDroplet, faFutbol, faSoap } from '@fortawesome/free-solid-svg-icons';
+import { faFish, faDroplet, faFutbol, faSoap, faCat } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import PetCareActionModal from '../modals/PetCareActionModal';
 import { Dropdown } from 'react-native-element-dropdown';
+import LevelComponent from '../components/LevelComponent';
 
+library.add(faFish, faDroplet, faFutbol, faSoap, faCat);
 
-library.add(faFish, faDroplet, faFutbol, faSoap);
-
-// Sample data for cats
 const cats = [
   { id: '1', name: 'Whiskers', hunger: 70, thirst: 40, happiness: 80, health: 90, energy: 60, image: 'https://placekitten.com/200/200' },
   { id: '2', name: 'Mittens', hunger: 50, thirst: 60, happiness: 70, health: 80, energy: 90, image: 'https://placekitten.com/200/200' },
@@ -33,7 +33,8 @@ const PetCareScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [actionType, setActionType] = useState('');
   const [dropdownValue, setDropdownValue] = useState(selectedCat.id);
-  
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+
   const scrollViewRef = useRef(null);
 
   useEffect(() => {
@@ -41,14 +42,13 @@ const PetCareScreen = () => {
     setDropdownValue(cats[0].id);
   }, []);
 
-
   const handleAction = (action) => {
     setActionType(action);
     setModalVisible(true);
   };
 
   const performAction = () => {
-    // TODO Perform the action (e.g., feeding, watering) here
+    // Perform the action (e.g., feeding, watering) here
     setModalVisible(false);
   };
 
@@ -61,26 +61,39 @@ const PetCareScreen = () => {
     setSelectedCat(selectedCat);
     setDropdownValue(item.value);
     const index = cats.findIndex(cat => cat.id === item.value);
-    scrollViewRef.current.scrollTo({ x: index * Dimensions.get('window').width, animated: true }); // Adjust based on page width
+    scrollViewRef.current.scrollTo({ x: index * Dimensions.get('window').width, animated: true });
+    setDropdownVisible(false);
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Dropdown for Cats */}
-      {cats.length > 1 && (
-        <Dropdown
-          style={styles.dropdown}
-          containerStyle={styles.dropdownContainer}
-          data={cats.map(cat => ({ label: cat.name, value: cat.id }))}
-          labelField="label"
-          valueField="value"
-          placeholder="Select a cat"
-          value={dropdownValue}
-          onChange={onDropdownChange}
-        />
-      )}
+      <View style={styles.header}>
+        <LevelComponent label="1" />
+        <TouchableOpacity onPress={() => setDropdownVisible(true)}>
+          <FontAwesomeIcon icon="fa-cat" size={40} color="#000" />
+        </TouchableOpacity>
+      </View>
 
-      {/* Horizontal ScrollView for Cats */}
+      <Modal visible={dropdownVisible} transparent={true} animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Dropdown
+              style={styles.dropdown}
+              containerStyle={styles.dropdownContainer}
+              data={cats.map(cat => ({ label: cat.name, value: cat.id }))}
+              labelField="label"
+              valueField="value"
+              placeholder="Select a cat"
+              value={dropdownValue}
+              onChange={onDropdownChange}
+            />
+            <TouchableOpacity onPress={() => setDropdownVisible(false)} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <ScrollView
         horizontal
         pagingEnabled
@@ -95,35 +108,29 @@ const PetCareScreen = () => {
         scrollEventThrottle={16}
       >
         {cats.map((cat) => (
-          /* Content of cat */
-
           <View key={cat.id} style={styles.catScreen}>
             <Text style={styles.catDetailsTitle}>{cat.name}</Text>
-            <Image source={{ uri: cat.image }} style={{ width: '100%', height: 250 }} />
-
-            <StatsLinearComponent selectedCat={selectedCat} />
+            <Image source={{ uri: cat.image }} style={styles.catImage} />
+            <StatsCircleComponent selectedCat={selectedCat} />
           </View>
         ))}
       </ScrollView>
 
-
-      {/* Action Buttons */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.actionButton} onPress={() => handleAction('feed')}>
-        <FontAwesomeIcon icon="fa-fish" size={15} color='white' style={styles.actionButtonText}/>
+          <FontAwesomeIcon icon="fa-fish" size={18} color="white" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={() => handleAction('water')}>
-          <FontAwesomeIcon icon="fa-droplet" size={15} color='white' style={styles.actionButtonText}/>
+          <FontAwesomeIcon icon="fa-droplet" size={18} color="white" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={() => handleAction('play')}>
-        <FontAwesomeIcon icon="fa-futbol" size={15} color='white' style={styles.actionButtonText}/>
+          <FontAwesomeIcon icon="fa-futbol" size={18} color="white" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={() => handleAction('clean')}>
-        <FontAwesomeIcon icon="fa-soap" size={15} color='white' style={styles.actionButtonText}/>
+          <FontAwesomeIcon icon="fa-soap" size={18} color="white" />
         </TouchableOpacity>
       </View>
 
-      {/* Action Modal */}
       <PetCareActionModal
         modalVisible={modalVisible}
         actionType={actionType}
@@ -141,15 +148,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5FCFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+  },
   dropdown: {
-    marginHorizontal: 15,
-    marginTop: 5,
-    height: 50,
-    backgroundColor: '#D9FADA',
+    width: '100%',
+    height: 40,
+    backgroundColor: '#e0e0e0',
     borderRadius: 12,
-    borderWidth: 2,
-    borderColor:'yellow', // set to pale yellow
-    padding: 12,
+    padding: 10,
   },
   dropdownContainer: {
     backgroundColor: '#e0e0e0',
@@ -161,34 +171,35 @@ const styles = StyleSheet.create({
   },
   catScreen: {
     width: Dimensions.get('window').width,
-    padding: 15,
+    paddingHorizontal: 15,
+    alignItems: 'center',
   },
   catDetailsTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 5,
-    alignSelf: 'center',
     textTransform: 'uppercase',
+  },
+  catImage: {
+    width: '100%',
+    height: '50%',
+    borderRadius: 15,
+    marginBottom: 10,
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 10,
-    borderTopWidth: 1.5,
-    borderColor: '#FFF5C3',
-    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderColor: '#DDD',
+    backgroundColor: '#FFF',
   },
   actionButton: {
-    backgroundColor: 'indigo',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginHorizontal: 5,
-  },
-  actionButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalContainer: {
     flex: 1,
@@ -197,13 +208,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
-    width: 300,
+    width: '90%',
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
   },
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
 });
-
 
 export default PetCareScreen;

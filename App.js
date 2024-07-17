@@ -12,7 +12,7 @@ import HomeScreen from './screens/HomeScreen';
 import PetCareScreen from './screens/PetCareScreen.js';
 import InventoryScreen from './screens/InventoryScreen.js';
 import ShopScreen from './screens/ShopScreen.js';
-import ProfileScreen from './screens/ProfileScreen.js';
+import SettingsScreen from './screens/ProfileScreen.js';
 
 const Tab = createBottomTabNavigator();
 
@@ -62,8 +62,8 @@ function App() {
           }}
         />
         <Tab.Screen
-          name="Profile"
-          component={ProfileScreen}
+          name="Settings"
+          component={SettingsScreen}
           options={{
             headerShown: false,
             tabBarIcon: ({ color, size }) => (
