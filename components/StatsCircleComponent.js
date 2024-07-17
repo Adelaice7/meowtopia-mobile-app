@@ -1,113 +1,118 @@
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faFish, faDroplet, faFaceSmile, faHeart, faBoltLightning } from '@fortawesome/free-solid-svg-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 
+const { width } = Dimensions.get('window');
+
+// Define the gradient colors based on the stat value
+const getGradientColors = (value) => {
+  const maxValue = 100;
+  const percentage = value / maxValue;
+
+  if (percentage <= 0.33) {
+    // Low values: Dark red to slightly less dark red
+    const redValue = Math.round(255 * (1 - percentage * 3));
+    return [
+      `rgb(${redValue}, 0, 0)`, // Darker red
+      `rgb(${Math.round(redValue * 0.8)}, 0, 0)` // Slightly lighter red
+    ];
+  } else if (percentage <= 0.66) {
+    // Middle values: Dark orange to slightly lighter orange
+    const orangeValue = Math.round(255 * ((percentage - 0.33) * 3));
+    return [
+      `rgb(${orangeValue}, ${Math.round(orangeValue * 0.5)}, 0)`, // Dark orange
+      `rgb(${Math.round(orangeValue * 1.2)}, ${Math.round(orangeValue * 0.6)}, 0)` // Slightly lighter orange
+    ];
+  } else {
+    // High values: Dark green to slightly lighter green
+    const greenValue = Math.round(255 * ((percentage - 0.66) * 3));
+    return [
+      `rgb(0, ${greenValue}, 0)`, // Dark green
+      `rgb(0, ${Math.round(greenValue * 1.2)}, 0)` // Slightly lighter green
+    ];
+  }
+};
+
+// Add icons to library
 library.add(faFish, faDroplet, faFaceSmile, faHeart, faBoltLightning);
 
-function RainbowProgressBar({ progress, icon, label }) {
-  return (
-    <View style={styles.progressContainer}>
-        <LinearGradient
-        colors={['red', 'yellow', 'green']}
-        style={styles.gradient}
-        start={{ x: 1, y: 1 }}
-        end={{ x: 1, y: 0 }}
-    />
-        <View style={[styles.mask, { height: `${100 - progress}%` }]} />
-            <View style={styles.labelContainer}>
-                <FontAwesomeIcon icon={icon} size={20} style={styles.icon} />
-                {/* <Text style={styles.label}>{label + ' ' + progress + '%'}</Text> */}
-            </View>
-    </View>
-  );
-}
+const StatsCircleComponent = ({ selectedCat }) => {
+  const radius = 30; // Adjust radius as needed
+  const diameter = radius * 2;
 
-function StatsCircleComponent({ selectedCat }) {
+  const icons = {
+    hunger: faFish,
+    thirst: faDroplet,
+    happiness: faFaceSmile,
+    health: faHeart,
+    energy: faBoltLightning,
+  };
+
   return (
     <View style={styles.container}>
-      <RainbowProgressBar
-        progress={selectedCat.hunger}
-        icon="fa-fish"
-        label="Hunger"
-      />
-      <RainbowProgressBar
-        progress={selectedCat.thirst}
-        icon="fa-droplet"
-        label="Thirst"
-      />
-      <RainbowProgressBar
-        progress={selectedCat.happiness}
-        icon="fa-face-smile"
-        label="Mood"
-      />
-      <RainbowProgressBar
-        progress={selectedCat.health}
-        icon="fa-heart"
-        label="Health"
-      />
-      <RainbowProgressBar
-        progress={selectedCat.energy}
-        icon="fa-bolt-lightning"
-        label="Energy"
-      />
+      {['hunger', 'thirst', 'happiness', 'health', 'energy'].map((stat, index) => {
+        const value = selectedCat[stat];
+        const gradientColors = getGradientColors(value);
+        const icon = icons[stat];
+
+        return (
+          <View key={index} style={styles.statContainer}>
+            {/* <Text style={styles.statTitle}>{stat.charAt(0).toUpperCase() + stat.slice(1)}</Text> */}
+            <View style={[styles.circle, { width: diameter, height: diameter }]}>
+              <LinearGradient
+                colors={gradientColors}
+                style={styles.gradient}
+              />
+              <View style={styles.iconContainer}>
+                <FontAwesomeIcon icon={icon} size={radius * 0.5} color="white" />
+              </View>
+            </View>
+          </View>
+        );
+      })}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'stretch',
-    justifyContent: 'space-evenly',
     flexDirection: 'row',
-    flexWrap: 'nowrap',
-    paddingVertical: 2,
-    width: '100%'
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    width: '100%',
+    padding: 5,
   },
-  progressBarContainer: {
-    // marginVertical: 4
+  statContainer: {
+    alignItems: 'center',
   },
-  progressContainer: {
-    height: 45,
-    width: 45,
-    borderRadius: 100,
-    borderWidth: 1.5,
-    borderColor: 'black',
+  statTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  circle: {
+    borderRadius: 50, // Circle effect
     overflow: 'hidden',
-    backgroundColor: '#e0e0e0', // background color of the progress bar
-    justifyContent: 'center', // center the text vertically
-    position: 'relative',
-    marginVertical: 4,
+    backgroundColor: 'white', // Circle border color
+    borderWidth: 2,
+    borderColor: 'black',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative', // Needed for icon positioning
   },
   gradient: {
-    height: '100%',
-    width: '100%',
-    position: 'absolute', // make sure the gradient stays at the back
+    ...StyleSheet.absoluteFillObject, // Fill the circle
+    borderRadius: 50,
   },
-  mask: {
-    backgroundColor: '#e0e0e0',
+  iconContainer: {
     position: 'absolute',
-    width: '100%',
-    right: 0,
-    top: 0,
-  },
-  labelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
     width: '100%',
-    position: 'absolute', // place the label container on top of the progress bar
-  },
-  icon: {
-    color: 'black',
-  },
-  label: {
-    fontWeight: 'bold',
-    fontSize: 10,
-    color: 'black',
+    height: '100%',
   },
 });
 

@@ -23,7 +23,7 @@ import LevelComponent from '../components/LevelComponent';
 library.add(faFish, faDroplet, faFutbol, faSoap, faCat);
 
 const cats = [
-  { id: '1', name: 'Whiskers', hunger: 70, thirst: 40, happiness: 80, health: 90, energy: 60, image: 'https://placekitten.com/200/200' },
+  { id: '1', name: 'Whiskers', hunger: 100, thirst: 0, happiness: 25, health: 50, energy: 75, image: 'https://placekitten.com/200/200' },
   { id: '2', name: 'Mittens', hunger: 50, thirst: 60, happiness: 70, health: 80, energy: 90, image: 'https://placekitten.com/200/200' },
   { id: '3', name: 'Shadow', hunger: 30, thirst: 50, happiness: 60, health: 70, energy: 80, image: 'https://placekitten.com/200/200' },
 ];
