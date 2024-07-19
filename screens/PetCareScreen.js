@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   Text,
-  Image, 
+  Image,
   StyleSheet,
   ScrollView,
   Dimensions,
@@ -11,6 +11,7 @@ import {
   Platform,
   StatusBar,
   Modal,
+  ActivityIndicator
 } from 'react-native';
 import StatsCircleComponent from '../components/StatsCircleComponent';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -19,27 +20,47 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import PetCareActionModal from '../modals/PetCareActionModal';
 import { Dropdown } from 'react-native-element-dropdown';
 import LevelComponent from '../components/LevelComponent';
+import { fetchCatsByUser } from '../api/cat';
 
 library.add(faFish, faDroplet, faFutbol, faSoap, faCat);
 
-const cats = [
-  { id: '1', name: 'Whiskers', hunger: 100, thirst: 0, happiness: 25, health: 50, energy: 75, image: 'https://placekitten.com/200/200' },
-  { id: '2', name: 'Mittens', hunger: 50, thirst: 60, happiness: 70, health: 80, energy: 90, image: 'https://placekitten.com/200/200' },
-  { id: '3', name: 'Shadow', hunger: 30, thirst: 50, happiness: 60, health: 70, energy: 80, image: 'https://placekitten.com/200/200' },
-];
+const POLLING_INTERVAL = 60000; // Poll every 60 seconds
 
 const PetCareScreen = () => {
-  const [selectedCat, setSelectedCat] = useState(cats[0]);
+  const [cats, setCats] = useState([]);
+  const [selectedCat, setSelectedCat] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [actionType, setActionType] = useState('');
-  const [dropdownValue, setDropdownValue] = useState(selectedCat.id);
+  const [dropdownValue, setDropdownValue] = useState(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const scrollViewRef = useRef(null);
+  const userId = '8a3c8c48-f14e-42db-b8e6-803d8962dd95';
+
+  const loadCats = async () => {
+    try {
+      const fetchedCats = await fetchCatsByUser(userId);
+      setCats(fetchedCats);
+      if (fetchedCats.length > 0) {
+        setSelectedCat(fetchedCats[0]);
+        setDropdownValue(fetchedCats[0]?.catId);
+      }
+    } catch (error) {
+      console.error('Failed to fetch cats', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setSelectedCat(cats[0]);
-    setDropdownValue(cats[0].id);
+    loadCats();
+
+    const interval = setInterval(loadCats, POLLING_INTERVAL);
+
+    console.log(cats);
+
+    return () => clearInterval(interval); // Cleanup interval on component unmount
   }, []);
 
   const handleAction = (action) => {
@@ -48,7 +69,7 @@ const PetCareScreen = () => {
   };
 
   const performAction = () => {
-    // Perform the action (e.g., feeding, watering) here
+    // Perform the action (e.g., feeding, watering)
     setModalVisible(false);
   };
 
@@ -57,13 +78,29 @@ const PetCareScreen = () => {
   };
 
   const onDropdownChange = (item) => {
-    const selectedCat = cats.find(cat => cat.id === item.value);
+    const selectedCat = cats.find(cat => cat.catId === item.value);
     setSelectedCat(selectedCat);
     setDropdownValue(item.value);
-    const index = cats.findIndex(cat => cat.id === item.value);
+    const index = cats.findIndex(cat => cat.catId === item.value);
     scrollViewRef.current.scrollTo({ x: index * Dimensions.get('window').width, animated: true });
     setDropdownVisible(false);
   };
+
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (cats.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text>No cats found.</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -80,7 +117,7 @@ const PetCareScreen = () => {
             <Dropdown
               style={styles.dropdown}
               containerStyle={styles.dropdownContainer}
-              data={cats.map(cat => ({ label: cat.name, value: cat.id }))}
+              data={cats.map(cat => ({ label: cat.name, value: cat.catId }))}
               labelField="label"
               valueField="value"
               placeholder="Select a cat"
@@ -103,15 +140,16 @@ const PetCareScreen = () => {
         onScroll={(e) => {
           const index = Math.round(e.nativeEvent.contentOffset.x / Dimensions.get('window').width);
           setSelectedCat(cats[index]);
-          setDropdownValue(cats[index].id);
+          setDropdownValue(cats[index].catId);
         }}
         scrollEventThrottle={16}
       >
         {cats.map((cat) => (
-          <View key={cat.id} style={styles.catScreen}>
+          <View key={cat.catId} style={styles.catScreen}>
             <Text style={styles.catDetailsTitle}>{cat.name}</Text>
             <Image source={{ uri: cat.image }} style={styles.catImage} />
             <StatsCircleComponent selectedCat={selectedCat} />
+            <Text>{cat.breedName}</Text>
           </View>
         ))}
       </ScrollView>
@@ -223,6 +261,16 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
